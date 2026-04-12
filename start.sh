@@ -9,33 +9,24 @@ echo
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 cd "$SCRIPT_DIR"
 
-ENV_NAME="emotion"
-
-# 检查 conda
-if command -v conda &>/dev/null; then
-    # 初始化 conda（兼容未 init 的情况）
-    eval "$(conda shell.bash hook 2>/dev/null)"
-
-    # 检查环境是否存在
-    if ! conda env list | grep -qw "$ENV_NAME"; then
-        echo "[1/3] 首次运行，创建 conda 环境 (Python 3.11)..."
-        conda create -n "$ENV_NAME" python=3.11 -y
-    fi
-
-    echo "[1/3] 激活 conda 环境 $ENV_NAME..."
-    conda activate "$ENV_NAME"
-else
-    echo "[1/3] 未检测到 conda，使用当前 Python 环境..."
-    # 创建 venv（如果不存在）
-    if [ ! -d "venv" ]; then
-        echo "       创建 venv 虚拟环境..."
-        python3 -m venv venv
-    fi
-    source venv/bin/activate
+# 检查 uv 是否安装
+if ! command -v uv &>/dev/null; then
+    echo "[0/3] 安装 uv..."
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+    source "$HOME/.local/bin/env" 2>/dev/null || export PATH="$HOME/.local/bin:$PATH"
 fi
 
-echo "[2/3] 检查并安装依赖..."
-pip install -r requirements.txt -q
+# 创建虚拟环境（如果不存在）
+if [ ! -d ".venv" ]; then
+    echo "[1/3] 创建虚拟环境 (Python 3.11)..."
+    uv venv --python 3.11
+fi
+
+echo "[1/3] 激活虚拟环境..."
+source .venv/bin/activate
+
+echo "[2/3] 安装依赖..."
+uv pip install -r requirements.txt
 
 echo "[3/3] 启动系统..."
 echo
