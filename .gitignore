@@ -16,6 +16,7 @@ build/
 .DS_Store
 Thumbs.db
 *.log
+.cache/
 flagged/
 gradio_cached_examples/
 assets/examples/*.wav
