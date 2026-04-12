@@ -100,7 +100,6 @@ def create_realtime_tab() -> gr.Tab:
                     sources=["webcam"],
                     streaming=True,
                     type="numpy",
-                    mirror_webcam=True,
                 )
 
             with gr.Column(scale=1):

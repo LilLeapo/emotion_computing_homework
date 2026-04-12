@@ -97,16 +97,16 @@ def build_app() -> gr.Blocks:
     except FileNotFoundError:
         custom_css = ""
 
-    with gr.Blocks(
-        title=GRADIO_CONFIG["title"],
-        theme=gr.themes.Soft(
-            primary_hue="teal",
-            secondary_hue="cyan",
-            neutral_hue="slate",
-            font=gr.themes.GoogleFont("Noto Sans SC"),
-        ),
-        css=custom_css,
-    ) as app:
+    _theme = gr.themes.Soft(
+        primary_hue="teal",
+        secondary_hue="cyan",
+        neutral_hue="slate",
+        font=gr.themes.GoogleFont("Noto Sans SC"),
+    )
+
+    with gr.Blocks(title=GRADIO_CONFIG["title"]) as app:
+        app.theme = _theme
+        app.css = custom_css
         gr.Markdown(
             f"# {GRADIO_CONFIG['title']}\n"
             f"*{GRADIO_CONFIG['description']}*"
