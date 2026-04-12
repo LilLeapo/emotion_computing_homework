@@ -42,7 +42,9 @@ class TextEmotionRecognizer(BaseEmotionRecognizer):
                 # 方案2: HuggingFace 多语言情感模型
                 model_id = "lxyuan/distilbert-base-multilingual-cased-sentiments-student"
                 self._tokenizer = AutoTokenizer.from_pretrained(model_id)
-                self._model = AutoModelForSequenceClassification.from_pretrained(model_id)
+                self._model = AutoModelForSequenceClassification.from_pretrained(
+                    model_id, attn_implementation="eager"
+                )
                 self._model.to(DEVICE)
                 self._model.eval()
                 self._backend = "huggingface"
