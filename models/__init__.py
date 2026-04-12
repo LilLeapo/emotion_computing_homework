@@ -1,0 +1,4 @@
+from models.text_emotion import TextEmotionRecognizer
+from models.speech_emotion import SpeechEmotionRecognizer
+from models.face_emotion import FaceEmotionRecognizer
+from models.fusion import MultimodalFusion

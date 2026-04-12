@@ -1,0 +1,89 @@
+/* 多模态情感识别系统 - 自定义主题 */
+
+/* 全局字体和背景 */
+.gradio-container {
+    font-family: 'Microsoft YaHei', 'PingFang SC', 'Helvetica Neue', sans-serif !important;
+    max-width: 1400px !important;
+}
+
+/* 标签页样式 */
+.tab-nav button {
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    padding: 12px 20px !important;
+}
+
+.tab-nav button.selected {
+    border-bottom: 3px solid #4ECDC4 !important;
+    color: #4ECDC4 !important;
+}
+
+/* 按钮样式 */
+.primary {
+    background: linear-gradient(135deg, #4ECDC4, #45B7D1) !important;
+    border: none !important;
+    font-size: 16px !important;
+    font-weight: bold !important;
+    border-radius: 10px !important;
+    transition: all 0.3s ease !important;
+}
+
+.primary:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 15px rgba(78, 205, 196, 0.4) !important;
+}
+
+/* 输入框样式 */
+textarea, input[type="text"] {
+    border-radius: 10px !important;
+    border: 2px solid #333 !important;
+    transition: border-color 0.3s !important;
+}
+
+textarea:focus, input[type="text"]:focus {
+    border-color: #4ECDC4 !important;
+}
+
+/* 图表容器 */
+.plot-container {
+    border-radius: 12px !important;
+    overflow: hidden !important;
+}
+
+/* 标题样式 */
+h1 {
+    background: linear-gradient(135deg, #4ECDC4, #45B7D1, #FF6B6B);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 800 !important;
+}
+
+/* 示例按钮 */
+.examples-row .gallery-item {
+    border-radius: 8px !important;
+    transition: all 0.2s !important;
+}
+
+.examples-row .gallery-item:hover {
+    transform: scale(1.02) !important;
+}
+
+/* Gallery */
+.gallery-item img {
+    border-radius: 8px !important;
+}
+
+/* 滚动条美化 */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #1a1a2e;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #4ECDC4;
+    border-radius: 4px;
+}
