@@ -63,6 +63,17 @@ TEXT_LABEL_MAP = {
     "disgust": "disgusted",
     "surprise": "surprised",
     "like": "happy",
+    # HuggingFace 三分类模型标签
+    "positive": "happy",
+    "negative": "sad",
+    # StructBERT 可能的额外标签
+    "喜好": "happy",
+    "乐": "happy",
+    "哀": "sad",
+    "怒": "angry",
+    "惧": "fearful",
+    "恶": "disgusted",
+    "惊": "surprised",
 }
 
 SPEECH_LABEL_MAP = {
