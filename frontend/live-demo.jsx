@@ -94,6 +94,12 @@ async function apiFace(file){
   return postForm('/api/face', fd);
 }
 
+async function apiLiveFace(file){
+  const fd = new FormData();
+  fd.append('file', file);
+  return postForm('/api/live-face', fd);
+}
+
 async function apiMultimodal({ text, audio, image }){
   const fd = new FormData();
   if(text) fd.append('text', text);
@@ -930,11 +936,58 @@ function LiveTab(){
   const [active, setActive] = useState(false);
   const [stream, setStream] = useState(null);
   const [err, setErr] = useState(null);
-  const [dist, setDist] = useState(()=>mockDist('happy',0.55));
+  const [dist, setDist] = useState(()=>EMO_KEYS.reduce((m,k)=>(m[k]=k==='neutral'?1:0,m),{}));
   const [fps, setFps] = useState(0);
+  const [latency, setLatency] = useState(null);
+  const [faces, setFaces] = useState(null);
+  const [inferring, setInferring] = useState(false);
   const videoRef = useRef(null);
   const tickRef = useRef(null);
+  const canvasRef = useRef(null);
+  const inFlightRef = useRef(false);
   const lastT = useRef(performance.now());
+
+  useEffect(()=>{
+    if(active && stream && videoRef.current){
+      videoRef.current.srcObject = stream;
+    }
+  }, [active, stream]);
+
+  async function inferCurrentFrame(){
+    if(inFlightRef.current || !videoRef.current) return;
+    const video = videoRef.current;
+    if(video.readyState < 2 || !video.videoWidth || !video.videoHeight) return;
+
+    inFlightRef.current = true;
+    setInferring(true);
+    try{
+      const maxW = 480;
+      const scale = Math.min(1, maxW / video.videoWidth);
+      const w = Math.max(1, Math.round(video.videoWidth * scale));
+      const h = Math.max(1, Math.round(video.videoHeight * scale));
+      const canvas = canvasRef.current || document.createElement('canvas');
+      canvasRef.current = canvas;
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0, w, h);
+      const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.78));
+      if(!blob) return;
+      const data = await apiLiveFace(new File([blob], 'camera-frame.jpg', { type:'image/jpeg' }));
+      setDist(data.dist);
+      setLatency(data.latency);
+      setFaces(data.faces);
+      const now = performance.now();
+      setFps(Math.max(1, Math.round(1000 / Math.max(1, now - lastT.current))));
+      lastT.current = now;
+      setErr(null);
+    }catch(e){
+      setErr(e.message || '实时识别失败');
+    }finally{
+      inFlightRef.current = false;
+      setInferring(false);
+    }
+  }
 
   async function start(){
     setErr(null);
@@ -942,16 +995,8 @@ function LiveTab(){
       const s = await navigator.mediaDevices.getUserMedia({ video:true, audio:false });
       setStream(s);
       setActive(true);
-      if(videoRef.current){ videoRef.current.srcObject = s; }
-      // simulate inference at 10 Hz
-      tickRef.current = setInterval(()=>{
-        const keys = ['happy','neutral','surprise','happy','neutral'];
-        const k = keys[Math.floor(Math.random()*keys.length)];
-        setDist(mockDist(k, 0.5+Math.random()*0.3));
-        const now = performance.now();
-        setFps(Math.round(1000/(now-lastT.current)));
-        lastT.current = now;
-      }, 200);
+      lastT.current = performance.now();
+      tickRef.current = setInterval(inferCurrentFrame, 700);
     }catch(e){
       setErr(e.message || '无法访问摄像头。请确认浏览器权限。');
     }
@@ -959,7 +1004,8 @@ function LiveTab(){
   function stop(){
     if(tickRef.current){ clearInterval(tickRef.current); tickRef.current=null; }
     if(stream){ stream.getTracks().forEach(t=>t.stop()); }
-    setStream(null); setActive(false); setFps(0);
+    inFlightRef.current = false;
+    setStream(null); setActive(false); setFps(0); setLatency(null); setFaces(null); setInferring(false);
   }
   useEffect(()=>()=>stop(), []);
 
@@ -970,12 +1016,12 @@ function LiveTab(){
       <div className="panel-hd">
         <div>
           <h2><em>实时</em> 摄像头</h2>
-          <p>开启摄像头后，系统以约 10 Hz 频率对每一帧进行 Haar Cascade 检测 + ViT 分类，结果叠加在视频流上。</p>
+          <p>开启摄像头后，浏览器定时抽取当前帧并发送到本地 FastAPI 后端，使用 Haar Cascade + ViT 进行真实表情识别。</p>
         </div>
         <div className="right">
-          INFERENCE · <b>~ 10 Hz</b><br/>
+          INFERENCE · <b>~ 1.4 Hz · backend</b><br/>
           MODEL · <b>vit-face-expression</b><br/>
-          PRIVACY · <b>local · no upload</b>
+          PRIVACY · <b>local service</b>
         </div>
       </div>
 
@@ -1003,6 +1049,13 @@ function LiveTab(){
                 </span>
               </div>
             )}
+            {active && inferring && (
+              <div style={{position:'absolute',right:10,bottom:10,padding:'6px 9px',
+                background:'rgba(10,10,12,.78)',border:'1px solid var(--line)',borderRadius:3,
+                color:'var(--fg-2)',fontFamily:'var(--mono)',fontSize:10,letterSpacing:'.06em'}}>
+                BACKEND INFERRING
+              </div>
+            )}
           </div>
           <div className="face-controls">
             {!active ? (
@@ -1028,7 +1081,7 @@ function LiveTab(){
           <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
             <span className="live-tag"><span className="d"></span>{active?'LIVE':'IDLE'}</span>
             <span className="mono" style={{fontSize:10.5,color:'var(--fg-3)',letterSpacing:'.04em'}}>
-              {active? `${fps} fps · ${active?'inferring':''}` : '— fps'}
+              {active? `${fps} fps · ${inferring?'inferring':'ready'}` : '— fps'}
             </span>
           </div>
           <div>
@@ -1038,6 +1091,10 @@ function LiveTab(){
             </h4>
             <div className="verdict-big" style={{fontSize:42}}>{topK}</div>
             <div className="verdict-zh">{ZH[topK]} · {(topV*100).toFixed(1)}%</div>
+            <div className="verdict-stats" style={{marginTop:14}}>
+              <div className="vstat"><span>LATENCY</span><b>{latency ? `${latency} ms` : '—'}</b></div>
+              <div className="vstat"><span>FACES</span><b>{faces ?? '—'}</b></div>
+            </div>
           </div>
           <div className="bar-list" style={{marginTop:4}}>
             {Object.entries(dist).sort((a,b)=>b[1]-a[1]).map(([k,v],i)=>(

@@ -186,6 +186,25 @@ async def analyze_face(file: UploadFile = File(...)):
     )
 
 
+@app.post("/api/live-face")
+async def analyze_live_face(file: UploadFile = File(...)):
+    started = time.perf_counter()
+    raw = await file.read()
+    arr = np.frombuffer(raw, dtype=np.uint8)
+    cv_image = cv2.imdecode(arr, cv2.IMREAD_COLOR)
+    if cv_image is None:
+        return JSONResponse({"error": "无法读取摄像头帧"}, status_code=400)
+
+    scores, _, faces = _face().predict_with_annotation(cv_image)
+    return _response(
+        scores,
+        started,
+        faces=len(faces),
+        modelName="vit-face-expression",
+        sourceLabel="live-camera",
+    )
+
+
 @app.post("/api/multimodal")
 async def analyze_multimodal(
     text: str = Form(""),
