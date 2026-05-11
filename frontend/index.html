@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>emotion.diag · Read what a face, a voice, and a sentence mean — together.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;1,6..72,300;1,6..72,400&family=Geist:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" />
+
+<style>
+:root{
+  --bg:#0a0a0c;
+  --bg-2:#121316;
+  --bg-3:#1a1c20;
+  --fg:#ece8df;
+  --fg-2:rgba(236,232,223,.72);
+  --fg-3:rgba(236,232,223,.5);
+  --fg-4:rgba(236,232,223,.22);
+  --line:rgba(236,232,223,.14);
+  --line-2:rgba(236,232,223,.26);
+  --c-joy:oklch(0.82 0.13 82);
+  --c-sad:oklch(0.65 0.10 230);
+  --c-ang:oklch(0.62 0.16 25);
+  --c-sur:oklch(0.78 0.13 165);
+
+  --serif:"Newsreader",ui-serif,Georgia,serif;
+  --sans:"Geist",ui-sans-serif,system-ui,-apple-system,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--fg);font-family:var(--sans);
+  font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased;
+  font-feature-settings:"ss01"}
+body{overflow-x:hidden;min-height:100vh;
+  background:
+    radial-gradient(60% 50% at 50% 0%, rgba(241,202,118,.06), transparent 70%),
+    radial-gradient(35% 60% at 0% 50%, rgba(236,232,223,.018), transparent 70%),
+    radial-gradient(35% 60% at 100% 50%, rgba(236,232,223,.018), transparent 70%),
+    var(--bg)}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+::selection{background:rgba(241,202,118,.32);color:var(--fg)}
+
+/* ─── nav ──────────────────────────────── */
+.nav{display:flex;align-items:center;justify-content:space-between;
+  padding:26px 56px;position:relative;z-index:10}
+@media (max-width:780px){.nav{padding:20px 24px}}
+.brand{display:flex;align-items:center;gap:14px}
+.brand-mark{display:flex;align-items:center;gap:3px;height:26px}
+.brand-mark i{display:block;width:2.5px;background:var(--fg);border-radius:1px}
+.brand-name{font-family:var(--serif);font-style:italic;font-weight:400;font-size:16px;
+  letter-spacing:-.01em;color:var(--fg-2);position:relative;top:1px}
+
+.navlinks{display:flex;align-items:center;gap:36px;font-family:var(--sans);
+  font-size:14px;color:var(--fg-3);font-weight:400}
+.navlinks a{position:relative;padding:6px 2px;transition:.15s}
+.navlinks a:hover{color:var(--fg)}
+.navlinks a.active{color:var(--fg)}
+.navlinks a.active::after{content:"";position:absolute;left:0;right:0;bottom:-2px;
+  height:1px;background:var(--fg)}
+@media (max-width:780px){.navlinks{display:none}}
+
+.login{font-family:var(--mono);font-size:11px;letter-spacing:.14em;
+  padding:11px 22px;border:1px solid var(--line-2);border-radius:999px;
+  transition:.15s;display:inline-flex;align-items:center;gap:8px;
+  white-space:nowrap;flex-shrink:0}
+.login:hover{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+
+/* ─── decorative top rule with end-pins ─── */
+.rule{display:flex;align-items:center;gap:14px;margin:14px 56px 0;color:var(--line-2)}
+.rule .line{flex:1;height:1px;background:linear-gradient(90deg,
+  transparent,var(--line) 8%,var(--line) 92%,transparent)}
+.rule .pin{width:9px;height:9px;border-radius:50%;border:1px solid var(--line-2);
+  background:var(--bg)}
+@media (max-width:780px){.rule{margin:14px 24px 0}}
+
+/* ─── hero ────────────────────────────── */
+.hero{padding:64px 24px 28px;text-align:center;position:relative}
+@media (max-width:780px){.hero{padding:48px 16px 24px}}
+
+.badge{display:inline-flex;align-items:center;gap:10px;
+  padding:9px 20px;border:1px solid var(--line-2);border-radius:999px;
+  font-family:var(--mono);font-size:11px;letter-spacing:.18em;color:var(--fg);
+  margin-bottom:48px;white-space:nowrap}
+.badge .glyph{display:inline-flex;align-items:center;justify-content:center;
+  width:14px;height:14px;font-size:14px;line-height:1;color:var(--c-joy)}
+
+h1.headline{font-family:var(--serif);font-weight:400;
+  font-size:clamp(40px,5.8vw,88px);
+  line-height:1.04;letter-spacing:-.02em;color:var(--fg);
+  max-width:14ch;margin:0 auto}
+h1.headline em{font-style:italic;color:var(--fg);font-weight:300}
+h1.headline .stack{display:block}
+h1.headline .accent{color:var(--c-joy);font-style:italic;font-weight:300}
+
+.sub{margin:36px auto 0;max-width:54ch;color:var(--fg-2);font-size:16px;line-height:1.65}
+.sub b{color:var(--fg);font-weight:500}
+
+.cta{margin-top:44px;display:inline-flex;align-items:center;gap:12px;
+  padding:16px 32px;background:var(--fg);color:var(--bg);
+  font-family:var(--mono);font-size:12px;letter-spacing:.18em;font-weight:600;
+  border-radius:999px;transition:.2s;
+  box-shadow:0 0 0 1px rgba(255,255,255,.06),0 18px 40px -10px rgba(241,202,118,.18)}
+.cta:hover{background:var(--c-joy);transform:translateY(-1px);
+  box-shadow:0 0 0 1px rgba(255,255,255,.06),0 24px 50px -10px rgba(241,202,118,.32)}
+.cta svg{transition:transform .2s}
+.cta:hover svg{transform:translateX(3px)}
+
+.cta-sub{display:block;margin-top:18px;font-family:var(--mono);font-size:10.5px;
+  letter-spacing:.1em;color:var(--fg-4);text-transform:uppercase}
+
+/* ─── decorative stippling (replaces hand-drawn clouds) ─── */
+.stipple{position:absolute;pointer-events:none;width:340px;height:300px;
+  opacity:.85;mix-blend-mode:screen}
+.stipple.left{left:-40px;top:240px}
+.stipple.right{right:-40px;top:240px;transform:scaleX(-1)}
+@media (max-width:980px){.stipple{display:none}}
+.stipple::before,.stipple::after{content:"";position:absolute;inset:0;
+  background-image:
+    radial-gradient(rgba(236,232,223,.45) 1px, transparent 1.5px),
+    radial-gradient(rgba(236,232,223,.25) 1px, transparent 1.5px);
+  background-size: 9px 9px, 14px 14px;
+  background-position: 0 0, 4px 4px;
+  mask-image:radial-gradient(60% 65% at 30% 60%, #000 30%, transparent 75%);
+  -webkit-mask-image:radial-gradient(60% 65% at 30% 60%, #000 30%, transparent 75%)}
+.stipple::after{background-size: 6px 6px;
+  mask-image:radial-gradient(45% 50% at 50% 40%, #000 20%, transparent 80%);
+  -webkit-mask-image:radial-gradient(45% 50% at 50% 40%, #000 20%, transparent 80%);
+  opacity:.6}
+
+/* ─── product preview ────────────────────── */
+.preview-wrap{position:relative;max-width:1100px;margin:64px auto 0;padding:0 56px}
+@media (max-width:780px){.preview-wrap{padding:0 16px;margin-top:40px}}
+
+.preview{background:var(--bg-2);border:1px solid var(--line);border-radius:8px;
+  overflow:hidden;box-shadow:0 50px 100px -30px rgba(0,0,0,.6),
+  0 0 0 1px rgba(255,255,255,.02) inset}
+
+.pv-bar{display:flex;align-items:center;justify-content:space-between;
+  padding:14px 18px;border-bottom:1px solid var(--line);gap:18px;
+  font-family:var(--mono);font-size:11px;color:var(--fg-3);letter-spacing:.04em;
+  white-space:nowrap;overflow:hidden}
+.pv-bar .l{display:flex;align-items:center;gap:10px;min-width:0;overflow:hidden;
+  text-overflow:ellipsis}
+.pv-bar .l b{color:var(--fg);font-weight:500;letter-spacing:.01em;font-family:var(--serif);
+  font-style:italic;font-size:15px}
+.pv-bar .l .sep{opacity:.4}
+.pv-bar .r{display:flex;align-items:center;gap:18px;flex-shrink:0}
+.pv-bar .live{display:inline-flex;align-items:center;gap:7px;color:var(--c-joy)}
+.pv-bar .live .pulse{width:7px;height:7px;border-radius:50%;background:var(--c-joy);
+  box-shadow:0 0 0 0 rgba(241,202,118,.5);animation:pulse 1.8s ease-out infinite}
+@keyframes pulse{
+  0%{box-shadow:0 0 0 0 rgba(241,202,118,.55)}
+  70%{box-shadow:0 0 0 8px rgba(241,202,118,0)}
+  100%{box-shadow:0 0 0 0 rgba(241,202,118,0)}
+}
+
+.pv-body{display:grid;grid-template-columns:1.1fr 1.6fr 1.1fr;min-height:340px}
+@media (max-width:880px){.pv-body{grid-template-columns:1fr}}
+.pv-cell{padding:18px;border-right:1px solid var(--line);display:flex;
+  flex-direction:column;gap:12px}
+.pv-cell:last-child{border-right:0}
+@media (max-width:880px){.pv-cell{border-right:0;border-bottom:1px solid var(--line)}
+  .pv-cell:last-child{border-bottom:0}}
+
+.pv-head{display:flex;justify-content:space-between;align-items:center;gap:8px;
+  font-family:var(--mono);font-size:9.5px;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--fg-3);white-space:nowrap}
+.pv-head>span{flex-shrink:0}
+.pv-head .ok{font-feature-settings:"tnum"}
+.pv-head .ok{color:var(--c-joy)}
+
+/* face mini */
+.pv-face{flex:1;border-radius:3px;
+  background:repeating-linear-gradient(135deg,
+    rgba(255,255,255,.02) 0 6px, rgba(255,255,255,.05) 6px 12px);
+  position:relative;min-height:160px;overflow:hidden}
+.pv-face svg{position:absolute;inset:0;width:100%;height:100%}
+.pv-face .lm{position:absolute;width:4px;height:4px;border-radius:50%;
+  background:var(--c-joy);box-shadow:0 0 6px rgba(241,202,118,.5)}
+
+/* wave mini */
+.pv-wave{flex:1;display:flex;align-items:center;gap:2px;padding:10px 2px;min-height:120px}
+.pv-wave i{display:block;width:3px;background:var(--fg-3);border-radius:1px;flex:1}
+.pv-wave i.hi{background:var(--c-joy)}
+
+/* result mini */
+.pv-bars{flex:1;display:flex;flex-direction:column;gap:8px;padding-top:4px;
+  font-family:var(--mono);font-size:10.5px}
+.pv-bars .br{display:grid;grid-template-columns:60px 1fr 36px;gap:8px;align-items:center}
+.pv-bars .br .lb{color:var(--fg-2)}
+.pv-bars .br .tk{height:6px;background:var(--bg-3);border-radius:1px;overflow:hidden;
+  position:relative;border:1px solid var(--line)}
+.pv-bars .br .fl{height:100%;background:var(--c-joy);
+  animation:grow 1.6s cubic-bezier(.2,.7,.2,1) both}
+.pv-bars .br.b2 .fl{background:var(--c-sur);width:18%;animation-delay:.05s}
+.pv-bars .br.b3 .fl{background:var(--fg-3);width:9%;animation-delay:.1s}
+.pv-bars .br.b4 .fl{background:var(--c-sad);width:5%;animation-delay:.15s}
+.pv-bars .br.b5 .fl{background:var(--c-ang);width:3%;animation-delay:.2s}
+.pv-bars .br .vl{color:var(--fg-3);text-align:right;font-variant-numeric:tabular-nums}
+.pv-bars .br.b1 .fl{width:61%}
+@keyframes grow{from{width:0 !important}}
+
+.pv-verdict{margin-top:6px;padding-top:12px;border-top:1px dashed var(--line);
+  font-family:var(--serif);font-style:italic;font-size:22px;letter-spacing:-.01em;
+  color:var(--c-joy);display:flex;align-items:baseline;justify-content:space-between;
+  gap:10px;white-space:nowrap}
+.pv-verdict .pct{font-family:var(--mono);font-size:10.5px;color:var(--fg-3);
+  font-style:normal;letter-spacing:.04em;white-space:nowrap;flex-shrink:0}
+
+.pv-text-input{flex:1;font-family:var(--serif);font-weight:400;font-size:14.5px;
+  line-height:1.55;color:var(--fg);display:flex;align-items:center}
+.pv-text-input .q{position:relative;padding-left:12px;word-break:keep-all;
+  overflow-wrap:break-word;hanging-punctuation:first last}
+.pv-text-input .q::before{content:"";position:absolute;left:0;top:2px;bottom:2px;
+  width:2px;background:var(--c-joy)}
+.pv-text-input mark{background:linear-gradient(180deg,transparent 60%,rgba(241,202,118,.35) 60%);
+  color:inherit;padding:0 2px;border-radius:1px;white-space:nowrap;display:inline-block}
+
+/* bottom rule + footer ────────────────── */
+.rule-b{display:flex;align-items:center;gap:14px;margin:64px 56px 0;color:var(--line-2)}
+.rule-b .line{flex:1;height:1px;background:var(--line)}
+.rule-b .pin{width:9px;height:9px;border-radius:50%;border:1px solid var(--line-2);
+  background:var(--bg)}
+@media (max-width:780px){.rule-b{margin:48px 24px 0}}
+
+.trust{padding:48px 56px 64px;text-align:center}
+@media (max-width:780px){.trust{padding:40px 24px 56px}}
+.trust .lbl{font-family:var(--sans);font-size:13.5px;color:var(--fg-2);margin-bottom:36px}
+.trust-row{display:grid;grid-template-columns:repeat(4,1fr);gap:36px;align-items:center;
+  max-width:980px;margin:0 auto}
+@media (max-width:880px){.trust-row{grid-template-columns:repeat(2,1fr);gap:32px}}
+.trust-item{display:flex;flex-direction:column;align-items:center;gap:6px;opacity:.65;
+  transition:.2s}
+.trust-item:hover{opacity:1}
+.trust-item .nm{font-family:var(--serif);font-style:italic;font-size:18px;color:var(--fg)}
+.trust-item .sub{font-family:var(--mono);font-size:10px;letter-spacing:.14em;
+  color:var(--fg-3);text-transform:uppercase;white-space:nowrap}
+
+/* foot ─────────────────────────────────── */
+.foot{padding:24px 56px 36px;display:flex;justify-content:space-between;
+  font-family:var(--mono);font-size:10.5px;color:var(--fg-4);letter-spacing:.06em;
+  border-top:1px solid var(--line);margin:0 0 0 0;flex-wrap:wrap;gap:10px}
+@media (max-width:780px){.foot{padding:20px 24px 28px}}
+
+/* hover effect for primary CTA arrow on load entrance */
+.fade-up{opacity:0;transform:translateY(12px);animation:fu .9s cubic-bezier(.2,.7,.2,1) forwards}
+.fade-up.d1{animation-delay:.06s}.fade-up.d2{animation-delay:.14s}
+.fade-up.d3{animation-delay:.22s}.fade-up.d4{animation-delay:.32s}
+.fade-up.d5{animation-delay:.5s}
+@keyframes fu{to{opacity:1;transform:none}}
+
+</style>
+</head>
+<body>
+
+<!-- ─── nav ─── -->
+<nav class="nav">
+  <a href="index.html" class="brand">
+    <span class="brand-mark" aria-hidden="true">
+      <i style="height:6px"></i><i style="height:14px"></i><i style="height:22px"></i>
+      <i style="height:16px"></i><i style="height:24px"></i><i style="height:10px"></i>
+      <i style="height:18px"></i><i style="height:8px"></i>
+    </span>
+    <span class="brand-name">emotion.diag</span>
+  </a>
+  <div class="navlinks">
+    <a class="active" href="index.html">Home</a>
+    <a href="#research">Research</a>
+    <a href="#features">Features</a>
+    <a href="app.html">Demo</a>
+  </div>
+  <a class="login" href="app.html">LOG IN</a>
+</nav>
+
+<div class="rule">
+  <span class="pin"></span>
+  <span class="line"></span>
+  <span class="pin"></span>
+</div>
+
+<!-- ─── hero ─── -->
+<section class="hero">
+  <span class="stipple left" aria-hidden="true"></span>
+  <span class="stipple right" aria-hidden="true"></span>
+
+  <span class="badge fade-up">
+    <span class="glyph">✦</span>
+    MULTIMODAL · AFFECTIVE COMPUTING
+  </span>
+
+  <h1 class="headline">
+    <span class="stack fade-up d1">Read a face,</span>
+    <span class="stack fade-up d2">a voice, and a sentence</span>
+    <span class="stack fade-up d3"><em>—</em> <span class="accent">together.</span></span>
+  </h1>
+
+  <p class="sub fade-up d4">
+    A three-channel emotion diagnosis system. <b>Vision · Speech · Text</b> are
+    aligned in a shared latent space, then weighted by attention to produce one
+    interpretable probability distribution — and a short rationale you can argue with.
+  </p>
+
+  <div class="fade-up d5">
+    <a class="cta" href="app.html">
+      OPEN THE DEMO
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+        <path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </a>
+    <span class="cta-sub">↳ runs on cpu · no signup · ~ 120 ms per inference</span>
+  </div>
+</section>
+
+<!-- ─── product preview card ─── -->
+<div class="preview-wrap fade-up d5">
+  <a href="app.html" class="preview" id="features">
+    <div class="pv-bar">
+      <div class="l">
+        <b>emotion.diag</b>
+        <span class="sep">/</span>
+        <span>session A1 · spontaneous · 04.2 s</span>
+      </div>
+      <div class="r">
+        <span class="live"><span class="pulse"></span>LIVE INFERENCE</span>
+        <span>FUSION v1.2</span>
+      </div>
+    </div>
+
+    <div class="pv-body">
+      <!-- vision -->
+      <div class="pv-cell">
+        <div class="pv-head"><span>① VISION</span><span class="ok">SMILE · 88%</span></div>
+        <div class="pv-face">
+          <svg viewBox="0 0 200 160" preserveAspectRatio="xMidYMid slice">
+            <ellipse cx="100" cy="82" rx="48" ry="62" fill="none"
+              stroke="rgba(236,232,223,.4)" stroke-width="0.8"/>
+            <circle cx="80" cy="72" r="4.5" fill="none" stroke="rgba(236,232,223,.6)" stroke-width="0.8"/>
+            <circle cx="120" cy="72" r="4.5" fill="none" stroke="rgba(236,232,223,.6)" stroke-width="0.8"/>
+            <path d="M78 102 Q100 118 122 102" fill="none"
+              stroke="rgb(241,202,118)" stroke-width="1.6" stroke-linecap="round"/>
+            <g fill="rgba(241,202,118,.85)">
+              <circle cx="68" cy="78" r="1.3"/><circle cx="92" cy="78" r="1.3"/>
+              <circle cx="108" cy="78" r="1.3"/><circle cx="132" cy="78" r="1.3"/>
+              <circle cx="100" cy="92" r="1.3"/>
+              <circle cx="78" cy="110" r="1.3"/><circle cx="100" cy="116" r="1.3"/>
+              <circle cx="122" cy="110" r="1.3"/>
+            </g>
+          </svg>
+        </div>
+        <div style="font-family:var(--mono);font-size:9.5px;color:var(--fg-3);letter-spacing:.06em">
+          68 LANDMARKS · MOUTH ACTIVATION 0.92
+        </div>
+      </div>
+
+      <!-- speech + text stacked -->
+      <div class="pv-cell">
+        <div class="pv-head"><span>② SPEECH</span><span class="ok">RISING · 81%</span></div>
+        <div class="pv-wave" id="pv-wave"></div>
+        <div class="pv-head" style="margin-top:6px"><span>③ TEXT</span><span class="ok">POSITIVE · 86%</span></div>
+        <div class="pv-text-input">
+          <div class="q">"<mark>哈哈哈</mark>这也<mark>太巧了</mark>吧，我们居然<mark>又见面了</mark>。"</div>
+        </div>
+      </div>
+
+      <!-- fused result -->
+      <div class="pv-cell">
+        <div class="pv-head"><span>FUSED · 7-CLASS</span><span class="ok">α·β·γ</span></div>
+        <div class="pv-bars">
+          <div class="br b1"><span class="lb">happy</span><span class="tk"><span class="fl"></span></span><span class="vl">0.612</span></div>
+          <div class="br b2"><span class="lb">surprise</span><span class="tk"><span class="fl"></span></span><span class="vl">0.183</span></div>
+          <div class="br b3"><span class="lb">neutral</span><span class="tk"><span class="fl"></span></span><span class="vl">0.094</span></div>
+          <div class="br b4"><span class="lb">sad</span><span class="tk"><span class="fl"></span></span><span class="vl">0.046</span></div>
+          <div class="br b5"><span class="lb">angry</span><span class="tk"><span class="fl"></span></span><span class="vl">0.031</span></div>
+        </div>
+        <div class="pv-verdict">
+          happy<span class="pct">0.612</span>
+        </div>
+      </div>
+    </div>
+  </a>
+</div>
+
+<!-- ─── trusted strip ─── -->
+<div class="rule-b">
+  <span class="pin"></span>
+  <span class="line"></span>
+  <span class="pin"></span>
+</div>
+
+<div class="trust" id="research">
+  <div class="lbl">Trained &amp; benchmarked on open academic corpora</div>
+  <div class="trust-row">
+    <div class="trust-item">
+      <div class="nm">FER2013</div>
+      <div class="sub">facial · 35k</div>
+    </div>
+    <div class="trust-item">
+      <div class="nm">RAVDESS</div>
+      <div class="sub">speech · 1.4k</div>
+    </div>
+    <div class="trust-item">
+      <div class="nm">GoEmotions</div>
+      <div class="sub">text · 58k</div>
+    </div>
+    <div class="trust-item">
+      <div class="nm">IEMOCAP</div>
+      <div class="sub">multimodal eval</div>
+    </div>
+  </div>
+</div>
+
+<footer class="foot">
+  <span>© 2025 · emotion.diag · multimodal affective computing homework</span>
+  <span>python · pytorch · streamlit · ❤︎ matplotlib</span>
+</footer>
+
+<script>
+// build the wave bars deterministically
+(function(){
+  const wave = document.getElementById('pv-wave');
+  if(!wave) return;
+  const heights = [3,5,8,12,18,22,28,34,38,42,40,36,32,28,24,22,28,34,40,44,42,36,30,24,20,18,22,26,30,28,24,20,16,14,12,10,8,6,5,4,6,8,10,12];
+  const hi = new Set([4,5,6,7,8,9,10,11,12,13,17,18,19,20,21]);
+  heights.forEach((h, i) => {
+    const b = document.createElement('i');
+    b.style.height = (8 + h * 1.5) + '%';
+    if (hi.has(i)) b.className = 'hi';
+    wave.appendChild(b);
+  });
+})();
+</script>
+</body>
+</html>

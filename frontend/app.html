@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Multimodal Emotion Diagnosis · 成果展示</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,300;1,6..72,400&family=Geist:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" />
+
+<style>
+:root{
+  --bg:#0b0c0e;
+  --bg-2:#121316;
+  --bg-3:#1a1c20;
+  --fg:#ece8df;
+  --fg-2:rgba(236,232,223,.72);
+  --fg-3:rgba(236,232,223,.45);
+  --fg-4:rgba(236,232,223,.18);
+  --line:rgba(236,232,223,.12);
+  --line-2:rgba(236,232,223,.22);
+
+  --c-joy:oklch(0.82 0.13 82);     /* warm amber */
+  --c-sad:oklch(0.65 0.10 230);    /* steel blue */
+  --c-ang:oklch(0.62 0.16 25);     /* terracotta */
+  --c-fea:oklch(0.55 0.09 290);    /* dusty violet */
+  --c-sur:oklch(0.78 0.13 165);    /* mint */
+  --c-dis:oklch(0.58 0.08 130);    /* moss */
+  --c-neu:oklch(0.62 0.01 80);     /* warm gray */
+
+  --serif:"Newsreader",ui-serif,Georgia,serif;
+  --sans:"Geist",ui-sans-serif,system-ui,-apple-system,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--fg);font-family:var(--sans);
+  font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased;
+  font-feature-settings:"ss01","cv11"}
+body{overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+
+/* ── grid utilities ─────────────────────── */
+.page{max-width:1320px;margin:0 auto;padding:0 56px}
+@media (max-width:780px){.page{padding:0 24px}}
+
+.mono{font-family:var(--mono);font-feature-settings:"ss01"}
+.serif{font-family:var(--serif);font-weight:400;letter-spacing:-.01em}
+.uc{text-transform:uppercase;letter-spacing:.14em;font-size:11px;font-family:var(--mono);
+   color:var(--fg-3)}
+.dot{display:inline-block;width:6px;height:6px;border-radius:50%;
+  background:var(--c-joy);vertical-align:middle;margin-right:8px}
+.kbd{font-family:var(--mono);font-size:11px;color:var(--fg-3);
+  border:1px solid var(--line);padding:1px 6px;border-radius:3px}
+
+/* ── nav ─────────────────────── */
+.nav{position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);
+  background:rgba(11,12,14,.72);border-bottom:1px solid var(--line)}
+.nav-inner{display:flex;align-items:center;justify-content:space-between;
+  padding:14px 56px;font-family:var(--mono);font-size:12px}
+.nav-inner .left{display:flex;align-items:center;gap:14px;color:var(--fg-2)}
+.nav-inner .left .mark{display:inline-flex;align-items:center;gap:10px;color:var(--fg)}
+.nav-inner .left svg{display:block}
+.nav-inner .links{display:flex;gap:26px;color:var(--fg-3)}
+.nav-inner .links a:hover{color:var(--fg)}
+.nav-inner .right{display:flex;align-items:center;gap:14px;color:var(--fg-3)}
+.nav-inner .pill{padding:5px 10px;border:1px solid var(--line-2);border-radius:999px;
+  font-size:11px}
+@media(max-width:780px){.nav-inner{padding:12px 24px}.nav-inner .links{display:none}}
+
+/* ── hero ─────────────────────── */
+.hero{padding:90px 0 56px;position:relative}
+.hero-grid{display:grid;grid-template-columns:1.4fr .9fr;gap:64px;align-items:end}
+@media (max-width:980px){.hero-grid{grid-template-columns:1fr;gap:36px}}
+.eyebrow{display:flex;align-items:center;gap:14px;color:var(--fg-3);
+  font-family:var(--mono);font-size:11px;letter-spacing:.06em;margin-bottom:28px}
+.eyebrow .bar{flex:0 0 32px;height:1px;background:var(--fg-3)}
+h1.title{font-family:var(--serif);font-weight:300;font-size:clamp(48px,7.4vw,108px);
+  line-height:.94;letter-spacing:-.025em;color:var(--fg)}
+h1.title em{font-style:italic;color:var(--c-joy);font-weight:300}
+h1.title .stack{display:block}
+.tagline{margin-top:32px;max-width:48ch;color:var(--fg-2);font-size:17px;line-height:1.55}
+.tagline strong{color:var(--fg);font-weight:500}
+
+.hero-side{display:flex;flex-direction:column;gap:14px;padding-bottom:8px}
+.metric{display:grid;grid-template-columns:1fr auto;align-items:baseline;
+  padding:18px 0;border-top:1px solid var(--line)}
+.metric:last-child{border-bottom:1px solid var(--line)}
+.metric .lbl{font-family:var(--mono);font-size:11px;color:var(--fg-3);
+  letter-spacing:.06em;text-transform:uppercase}
+.metric .val{font-family:var(--serif);font-weight:300;font-size:42px;line-height:1;
+  letter-spacing:-.02em}
+.metric .val .unit{font-family:var(--mono);font-size:13px;color:var(--fg-3);
+  margin-left:6px;letter-spacing:0}
+
+.hero-bottom{margin-top:64px;display:flex;align-items:center;
+  justify-content:space-between;flex-wrap:wrap;gap:18px}
+.hero-bottom .meta{display:flex;gap:36px;font-family:var(--mono);font-size:11px;
+  color:var(--fg-3)}
+.hero-bottom .meta div span{color:var(--fg);display:block;margin-top:4px;font-size:12px}
+.hero-cta{display:flex;gap:10px;font-family:var(--mono);font-size:12px}
+.btn{padding:11px 18px;border-radius:4px;border:1px solid var(--line-2);
+  display:inline-flex;align-items:center;gap:8px;transition:.15s}
+.btn:hover{background:var(--bg-2);border-color:var(--fg-3)}
+.btn.primary{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.btn.primary:hover{background:var(--c-joy);border-color:var(--c-joy)}
+
+/* ── section heading ─────────────────────── */
+.sect{padding:88px 0;border-top:1px solid var(--line);position:relative}
+.sect-head{display:grid;grid-template-columns:120px 1fr;gap:40px;margin-bottom:48px;
+  align-items:start}
+.sect-num{font-family:var(--mono);font-size:11px;color:var(--fg-3);letter-spacing:.1em}
+.sect-h{display:flex;flex-direction:column;gap:18px}
+.sect-h h2{font-family:var(--serif);font-weight:300;font-size:clamp(32px,4.2vw,56px);
+  letter-spacing:-.02em;line-height:1.02;max-width:22ch}
+.sect-h h2 em{font-style:italic;color:var(--c-joy)}
+.sect-h p{color:var(--fg-2);max-width:62ch;font-size:15.5px;line-height:1.65}
+@media (max-width:780px){.sect-head{grid-template-columns:1fr;gap:14px}}
+
+/* ── architecture flow ─────────────────────── */
+.arch{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;
+  border:1px solid var(--line);border-radius:6px;overflow:hidden}
+@media (max-width:980px){.arch{grid-template-columns:1fr}}
+.arch-col{padding:24px;border-right:1px solid var(--line);position:relative}
+.arch-col:last-child{border-right:0}
+@media (max-width:980px){.arch-col{border-right:0;border-bottom:1px solid var(--line)}
+  .arch-col:last-child{border-bottom:0}}
+.arch-col h4{font-family:var(--mono);font-size:11px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--fg-3);margin-bottom:18px;
+  display:flex;align-items:center;gap:10px}
+.arch-col h4 .ix{font-size:10px;color:var(--fg-4);font-weight:500}
+.modality-list{display:flex;flex-direction:column;gap:14px}
+.mod-card{padding:14px;border:1px solid var(--line);border-radius:4px;
+  background:var(--bg-2);position:relative}
+.mod-card .mod-h{display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:8px}
+.mod-card .mod-h b{font-family:var(--serif);font-weight:400;font-size:18px;letter-spacing:-.01em}
+.mod-card .mod-h .tag{font-family:var(--mono);font-size:9.5px;color:var(--fg-3);
+  letter-spacing:.06em;border:1px solid var(--line);padding:2px 6px;border-radius:2px}
+.mod-card .mod-d{font-size:12.5px;color:var(--fg-2);line-height:1.5}
+.mod-card .mod-m{margin-top:10px;display:flex;gap:14px;font-family:var(--mono);
+  font-size:10px;color:var(--fg-3);letter-spacing:.04em}
+.mod-card .mod-m span b{color:var(--fg);font-weight:500;margin-left:4px}
+
+.fuse-wrap{display:flex;flex-direction:column;align-items:center;
+  justify-content:center;height:100%;padding:40px 24px;gap:18px;text-align:center;
+  background:radial-gradient(80% 60% at 50% 50%,rgba(236,232,223,.06),transparent 70%)}
+.fuse-core{width:140px;height:140px;border-radius:50%;border:1px solid var(--fg-3);
+  position:relative;display:flex;align-items:center;justify-content:center}
+.fuse-core::before,.fuse-core::after{content:"";position:absolute;inset:14px;
+  border-radius:50%;border:1px solid var(--line-2)}
+.fuse-core::after{inset:28px;border-color:var(--fg-4)}
+.fuse-core .fuse-l{font-family:var(--mono);font-size:10.5px;color:var(--fg);
+  letter-spacing:.1em;z-index:1;text-align:center}
+.fuse-core .fuse-l b{display:block;font-family:var(--serif);font-weight:400;
+  font-size:20px;letter-spacing:-.02em;margin-top:2px}
+.fuse-cap{font-family:var(--mono);font-size:10.5px;color:var(--fg-3);
+  letter-spacing:.06em;max-width:30ch;line-height:1.6}
+
+.out-list{display:flex;flex-direction:column;gap:6px}
+.out-row{display:grid;grid-template-columns:auto 1fr 60px;align-items:center;gap:10px;
+  padding:6px 0;font-family:var(--mono);font-size:11.5px}
+.out-row .swatch{width:10px;height:10px;border-radius:2px}
+.out-row .name{color:var(--fg-2)}
+.out-row .num{color:var(--fg-3);text-align:right;font-variant-numeric:tabular-nums}
+.out-foot{margin-top:18px;padding-top:14px;border-top:1px dashed var(--line);
+  font-family:var(--mono);font-size:10.5px;color:var(--fg-3);letter-spacing:.04em;
+  line-height:1.7}
+
+/* ── demo ─────────────────────── */
+.demo{display:grid;grid-template-columns:280px 1fr;gap:0;
+  border:1px solid var(--line);border-radius:6px;overflow:hidden;background:var(--bg-2)}
+@media (max-width:980px){.demo{grid-template-columns:1fr}}
+.demo-cases{border-right:1px solid var(--line);padding:14px 0}
+@media (max-width:980px){.demo-cases{border-right:0;border-bottom:1px solid var(--line);
+  display:flex;overflow-x:auto;padding:14px}}
+.case-row{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:center;
+  padding:14px 22px;cursor:pointer;border-left:2px solid transparent;transition:.15s;
+  position:relative}
+@media (max-width:980px){.case-row{flex:0 0 220px;border-left:0;
+  border-bottom:2px solid transparent;padding:12px 14px}}
+.case-row:hover{background:rgba(255,255,255,.02)}
+.case-row.active{border-left-color:var(--c-joy);background:rgba(255,255,255,.025)}
+@media (max-width:980px){.case-row.active{border-left:0;border-bottom-color:var(--c-joy)}}
+.case-row .ix{font-family:var(--mono);font-size:10.5px;color:var(--fg-4);letter-spacing:.06em}
+.case-row .info b{font-family:var(--serif);font-weight:400;font-size:16px;letter-spacing:-.01em;display:block}
+.case-row .info span{font-family:var(--mono);font-size:10.5px;color:var(--fg-3);
+  letter-spacing:.04em;margin-top:2px;display:block}
+
+.demo-stage{padding:28px;display:flex;flex-direction:column;gap:24px}
+.demo-head{display:flex;align-items:flex-start;justify-content:space-between;gap:24px;
+  padding-bottom:18px;border-bottom:1px solid var(--line)}
+.demo-head .l h3{font-family:var(--serif);font-weight:400;font-size:26px;
+  letter-spacing:-.015em;margin-bottom:6px}
+.demo-head .l p{color:var(--fg-3);font-family:var(--mono);font-size:11px;letter-spacing:.04em}
+.demo-head .r{display:flex;gap:6px;font-family:var(--mono);font-size:10.5px;
+  color:var(--fg-3);letter-spacing:.04em;flex-shrink:0;text-align:right;line-height:1.7}
+.demo-head .r b{color:var(--fg);font-weight:500}
+
+.modality-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+@media (max-width:780px){.modality-grid{grid-template-columns:1fr}}
+.mview{border:1px solid var(--line);border-radius:4px;padding:14px;
+  background:var(--bg-3);display:flex;flex-direction:column;gap:10px;min-height:200px}
+.mview .mh{display:flex;align-items:center;justify-content:space-between;
+  font-family:var(--mono);font-size:10px;color:var(--fg-3);letter-spacing:.08em;
+  text-transform:uppercase}
+.mview .mh .conf{color:var(--c-joy)}
+
+/* face placeholder */
+.face-ph{flex:1;min-height:140px;border-radius:2px;
+  background:repeating-linear-gradient(135deg,
+    rgba(255,255,255,.022) 0 6px,rgba(255,255,255,.05) 6px 12px);
+  position:relative;overflow:hidden}
+.face-ph svg{position:absolute;inset:0;width:100%;height:100%}
+.face-ph .ph-cap{position:absolute;left:8px;bottom:8px;font-family:var(--mono);
+  font-size:9.5px;color:var(--fg-3);letter-spacing:.06em}
+
+/* audio waveform */
+.wave{flex:1;display:flex;align-items:center;gap:2px;padding:14px 4px;min-height:120px}
+.wave i{display:block;width:3px;background:var(--fg-3);border-radius:1px;flex:1}
+.wave i.hi{background:var(--c-joy)}
+
+/* text quote */
+.text-block{flex:1;display:flex;flex-direction:column;gap:8px;justify-content:center;
+  font-family:var(--serif);font-weight:400;font-size:17px;line-height:1.5;
+  letter-spacing:-.005em}
+.text-block .quote{color:var(--fg);position:relative;padding-left:14px}
+.text-block .quote::before{content:"";position:absolute;left:0;top:2px;bottom:2px;
+  width:2px;background:var(--c-joy);border-radius:1px}
+.text-block .word{background:linear-gradient(180deg,transparent 60%,rgba(241,202,118,.32) 60%);
+  padding:0 2px;border-radius:1px}
+.text-block .meta{font-family:var(--mono);font-size:10.5px;color:var(--fg-3);
+  letter-spacing:.04em;margin-top:10px}
+
+/* result bar */
+.result{display:grid;grid-template-columns:1fr 320px;gap:24px;
+  padding-top:18px;border-top:1px solid var(--line)}
+@media (max-width:980px){.result{grid-template-columns:1fr}}
+.bars{display:flex;flex-direction:column;gap:8px}
+.bar-row{display:grid;grid-template-columns:90px 1fr 56px;align-items:center;gap:12px;
+  font-family:var(--mono);font-size:11px}
+.bar-row .lbl{color:var(--fg-2);letter-spacing:.04em;text-transform:lowercase}
+.bar-row .track{height:10px;background:var(--bg-3);border-radius:1px;overflow:hidden;
+  position:relative;border:1px solid var(--line)}
+.bar-row .fill{height:100%;transition:width .6s cubic-bezier(.2,.7,.2,1)}
+.bar-row .val{color:var(--fg-3);text-align:right;font-variant-numeric:tabular-nums}
+.bar-row.top .lbl{color:var(--fg)}
+.bar-row.top .val{color:var(--fg)}
+
+.diag{padding:18px;border:1px solid var(--line);border-radius:4px;
+  background:var(--bg-3);display:flex;flex-direction:column;gap:10px}
+.diag-h{font-family:var(--mono);font-size:10px;color:var(--fg-3);letter-spacing:.1em;
+  text-transform:uppercase}
+.diag-verdict{font-family:var(--serif);font-weight:400;font-size:32px;letter-spacing:-.02em;
+  line-height:1.05;color:var(--fg);display:flex;align-items:center;gap:12px}
+.diag-verdict em{font-style:italic;color:var(--c-joy)}
+.diag-conf{display:flex;align-items:center;gap:10px;font-family:var(--mono);
+  font-size:11px;color:var(--fg-3);letter-spacing:.04em}
+.diag-conf .ring{width:36px;height:36px;border-radius:50%;
+  background:conic-gradient(var(--c-joy) calc(var(--p) * 1%),var(--line) 0);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.diag-conf .ring::after{content:"";width:28px;height:28px;background:var(--bg-3);
+  border-radius:50%}
+.diag-conf .ring span{position:absolute;font-family:var(--mono);font-size:10px;
+  color:var(--fg);font-weight:500}
+.diag-conf .ring-wrap{position:relative;display:flex;align-items:center;
+  justify-content:center}
+.diag-notes{font-size:12px;color:var(--fg-2);line-height:1.6;padding-top:10px;
+  border-top:1px dashed var(--line)}
+.diag-notes .ll{font-family:var(--mono);font-size:10px;color:var(--fg-3);
+  letter-spacing:.06em;display:block;margin-bottom:4px;text-transform:uppercase}
+
+/* ── results section ─────────────────────── */
+.res-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:32px}
+@media (max-width:980px){.res-grid{grid-template-columns:1fr}}
+
+.tbl{border:1px solid var(--line);border-radius:6px;overflow:hidden;background:var(--bg-2)}
+.tbl-head{display:grid;grid-template-columns:1.3fr .8fr .8fr .8fr .8fr;
+  padding:14px 18px;font-family:var(--mono);font-size:10px;letter-spacing:.1em;
+  color:var(--fg-3);text-transform:uppercase;border-bottom:1px solid var(--line)}
+.tbl-head>div:not(:first-child){text-align:right}
+.tbl-row{display:grid;grid-template-columns:1.3fr .8fr .8fr .8fr .8fr;
+  padding:14px 18px;border-bottom:1px solid var(--line);
+  font-family:var(--mono);font-size:12px;align-items:center}
+.tbl-row:last-child{border-bottom:0}
+.tbl-row .nm{font-family:var(--serif);font-size:15px;font-weight:400}
+.tbl-row .nm small{display:block;font-family:var(--mono);font-size:10px;
+  color:var(--fg-3);letter-spacing:.04em;margin-top:2px}
+.tbl-row>div:not(:first-child){text-align:right;font-variant-numeric:tabular-nums;
+  color:var(--fg-2)}
+.tbl-row.best{background:linear-gradient(90deg,rgba(241,202,118,.04),transparent)}
+.tbl-row.best>div:not(:first-child){color:var(--fg)}
+.tbl-row.best .nm{color:var(--c-joy)}
+
+.cm{padding:24px;border:1px solid var(--line);border-radius:6px;background:var(--bg-2)}
+.cm-h{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:18px}
+.cm-h h4{font-family:var(--serif);font-weight:400;font-size:18px;letter-spacing:-.01em}
+.cm-h .meta{font-family:var(--mono);font-size:10px;color:var(--fg-3);letter-spacing:.06em}
+.cm-grid{display:grid;grid-template-columns:38px repeat(7,1fr);
+  grid-template-rows:auto repeat(7,1fr);gap:2px;aspect-ratio:1.05}
+.cm-corner{}
+.cm-th{font-family:var(--mono);font-size:9px;color:var(--fg-3);letter-spacing:.04em;
+  text-align:center;padding:4px 0}
+.cm-thy{font-family:var(--mono);font-size:9px;color:var(--fg-3);letter-spacing:.04em;
+  text-align:right;padding-right:6px;display:flex;align-items:center;justify-content:flex-end}
+.cm-cell{aspect-ratio:1;display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-size:10.5px;font-weight:500;border-radius:1px;
+  color:var(--fg);position:relative}
+.cm-cell.diag{outline:1px solid var(--c-joy);outline-offset:-1px}
+.cm-foot{margin-top:14px;padding-top:14px;border-top:1px dashed var(--line);
+  display:flex;align-items:center;gap:12px;font-family:var(--mono);font-size:10px;
+  color:var(--fg-3);letter-spacing:.04em}
+.cm-foot .scale{flex:1;height:6px;
+  background:linear-gradient(90deg,rgba(241,202,118,.06),rgba(241,202,118,.95));
+  border-radius:1px}
+
+/* ── viz gallery ─────────────────────── */
+.viz-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media (max-width:780px){.viz-grid{grid-template-columns:1fr}}
+.viz-card{padding:22px;border:1px solid var(--line);border-radius:6px;background:var(--bg-2);
+  display:flex;flex-direction:column;gap:14px;min-height:340px}
+.viz-card.span{grid-column:span 2}
+@media (max-width:780px){.viz-card.span{grid-column:span 1}}
+.viz-card .vh{display:flex;align-items:baseline;justify-content:space-between}
+.viz-card .vh h4{font-family:var(--serif);font-weight:400;font-size:20px;letter-spacing:-.01em}
+.viz-card .vh .tag{font-family:var(--mono);font-size:10px;color:var(--fg-3);letter-spacing:.08em;
+  text-transform:uppercase}
+.viz-card .vd{font-size:13px;color:var(--fg-3);line-height:1.5;max-width:60ch}
+.viz-canvas{flex:1;border:1px dashed var(--line);border-radius:3px;position:relative;
+  background:rgba(255,255,255,.015);min-height:200px;overflow:hidden}
+
+/* V-A scatter */
+.va-bg{position:absolute;inset:24px;border:1px solid var(--line);border-radius:2px}
+.va-bg::before,.va-bg::after{content:"";position:absolute;background:var(--line)}
+.va-bg::before{left:50%;top:0;bottom:0;width:1px}
+.va-bg::after{top:50%;left:0;right:0;height:1px}
+.va-axis{position:absolute;font-family:var(--mono);font-size:9.5px;color:var(--fg-3);
+  letter-spacing:.06em;text-transform:uppercase}
+.va-pt{position:absolute;width:10px;height:10px;border-radius:50%;
+  transform:translate(-50%,-50%);box-shadow:0 0 0 1px rgba(11,12,14,.6)}
+
+/* time series */
+.ts-svg{width:100%;height:100%;display:block}
+
+/* heatmap face */
+.face-heat{position:absolute;inset:24px;display:grid;
+  grid-template-columns:repeat(12,1fr);grid-template-rows:repeat(12,1fr);gap:1px}
+.face-heat i{display:block;border-radius:1px}
+
+/* spectrogram */
+.spec{position:absolute;inset:24px;display:grid;grid-template-columns:repeat(48,1fr);
+  grid-template-rows:repeat(20,1fr);gap:1px}
+.spec i{display:block}
+
+/* ── footer ─────────────────────── */
+.foot{padding:64px 0 80px;border-top:1px solid var(--line)}
+.foot-grid{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:48px}
+@media (max-width:780px){.foot-grid{grid-template-columns:1fr;gap:30px}}
+.foot-grid h5{font-family:var(--mono);font-size:10px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--fg-3);margin-bottom:14px}
+.foot-grid p,.foot-grid a{color:var(--fg-2);font-size:13.5px;line-height:1.7;display:block}
+.foot-grid a:hover{color:var(--fg)}
+.foot-stamp{margin-top:48px;padding-top:24px;border-top:1px solid var(--line);
+  display:flex;justify-content:space-between;font-family:var(--mono);font-size:10.5px;
+  color:var(--fg-3);letter-spacing:.06em;flex-wrap:wrap;gap:8px}
+
+/* ── selection ─────────────────────── */
+::selection{background:rgba(241,202,118,.32);color:var(--fg)}
+
+/* scroll-fade on first paint */
+.fade-up{opacity:0;transform:translateY(14px);
+  animation:fu .9s cubic-bezier(.2,.7,.2,1) forwards}
+.fade-up.d1{animation-delay:.08s}
+.fade-up.d2{animation-delay:.16s}
+.fade-up.d3{animation-delay:.24s}
+@keyframes fu{to{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+
+<!-- ─────── NAV ─────── -->
+<nav class="nav">
+  <div class="nav-inner">
+    <div class="left">
+      <span class="mark">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="10.5" stroke="currentColor" stroke-width="1"/>
+          <circle cx="12" cy="12" r="6" stroke="currentColor" stroke-width="1" opacity=".55"/>
+          <circle cx="12" cy="12" r="2" fill="currentColor"/>
+        </svg>
+        <b style="font-weight:500;letter-spacing:.02em">emotion.diag</b>
+      </span>
+      <span style="opacity:.4">/</span>
+      <span>v1.2 · zh-CN</span>
+    </div>
+    <div class="links">
+      <a href="#overview">概述</a>
+      <a href="#architecture">架构</a>
+      <a href="#demo">在线 Demo</a>
+      <a href="#results">实验结果</a>
+      <a href="#visual">可视化</a>
+    </div>
+    <div class="right">
+      <span class="pill">课程作业 · 2025</span>
+    </div>
+  </div>
+</nav>
+
+<!-- ─────── HERO ─────── -->
+<section class="hero" id="overview">
+  <div class="page">
+    <div class="hero-grid">
+      <div>
+        <div class="eyebrow fade-up">
+          <span class="bar"></span>
+          <span>Multimodal Affective Computing · 期末成果</span>
+        </div>
+        <h1 class="title fade-up d1">
+          <span class="stack">读懂</span>
+          <span class="stack">一张脸 · 一段声音 ·</span>
+          <span class="stack">一句话<em>之间。</em></span>
+        </h1>
+        <p class="tagline fade-up d2">
+          基于 <strong>视觉 + 语音 + 文本</strong> 三模态融合的情感诊断系统。
+          在统一的特征空间内对齐异构信号，输出可解释的情绪概率分布与诊断报告。
+          训练集涵盖 FER2013、RAVDESS 与 GoEmotions，融合策略采用注意力加权。
+        </p>
+      </div>
+
+      <aside class="hero-side fade-up d2">
+        <div class="metric">
+          <div class="lbl">融合精度 · Acc</div>
+          <div class="val">87.4<span class="unit">%</span></div>
+        </div>
+        <div class="metric">
+          <div class="lbl">F1 macro</div>
+          <div class="val">0.83<span class="unit">w</span></div>
+        </div>
+        <div class="metric">
+          <div class="lbl">模态数</div>
+          <div class="val">3<span class="unit">vis · spc · txt</span></div>
+        </div>
+        <div class="metric">
+          <div class="lbl">情感类别</div>
+          <div class="val">7<span class="unit">classes</span></div>
+        </div>
+      </aside>
+    </div>
+
+    <div class="hero-bottom fade-up d3">
+      <div class="meta">
+        <div class="uc">作者<span>HBQ · LilLeapo</span></div>
+        <div class="uc">指导教师<span>情感计算 · 2025 春</span></div>
+        <div class="uc">代码<span>github.com/LilLeapo/emotion_computing_homework</span></div>
+        <div class="uc">提交日期<span>2025 · 06</span></div>
+      </div>
+      <div class="hero-cta">
+        <a class="btn primary" href="#demo">
+          运行 Demo
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <path d="M2 6h8M7 3l3 3-3 3" stroke="currentColor" stroke-width="1.2"/>
+          </svg>
+        </a>
+        <a class="btn" href="#results">查看结果</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────── ARCHITECTURE ─────── -->
+<section class="sect" id="architecture">
+  <div class="page">
+    <div class="sect-head">
+      <div class="sect-num">§ 01 / SYSTEM</div>
+      <div class="sect-h">
+        <h2>三条独立的感知通路，<em>汇入</em>同一个判断。</h2>
+        <p>视觉、语音与文本各自经过预处理与独立编码器，提取到对齐到 256 维的特征表示后，
+          经由注意力加权的后融合层得到最终的情绪分布。任何一条通路缺失时，系统会自动调整其余权重，保证可用性。</p>
+      </div>
+    </div>
+
+    <div class="arch">
+      <!-- input col -->
+      <div class="arch-col">
+        <h4>① INPUT MODALITIES <span class="ix">raw signals</span></h4>
+        <div class="modality-list">
+          <div class="mod-card">
+            <div class="mod-h"><b>视觉 · Vision</b><span class="tag">CNN</span></div>
+            <div class="mod-d">摄像头帧 / 上传图像 → 人脸检测 → 对齐裁剪至 48×48 灰度。</div>
+            <div class="mod-m">
+              <span>BACKBONE<b>VGG-Face</b></span>
+              <span>FPS<b>15</b></span>
+            </div>
+          </div>
+          <div class="mod-card">
+            <div class="mod-h"><b>语音 · Speech</b><span class="tag">CNN+LSTM</span></div>
+            <div class="mod-d">麦克风采集 16 kHz → 静音裁剪 → MFCC (40) + Mel 频谱。</div>
+            <div class="mod-m">
+              <span>FEAT<b>MFCC·40</b></span>
+              <span>WIN<b>25 ms</b></span>
+            </div>
+          </div>
+          <div class="mod-card">
+            <div class="mod-h"><b>文本 · Text</b><span class="tag">BERT</span></div>
+            <div class="mod-d">语音转写 / 直接输入 → 分词与最大长度 64 padding → 句向量。</div>
+            <div class="mod-m">
+              <span>ENCODER<b>bert-base-zh</b></span>
+              <span>DIM<b>768</b></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- fusion col -->
+      <div class="arch-col" style="padding:0">
+        <div style="padding:24px 24px 0">
+          <h4>② FEATURE FUSION <span class="ix">attention weighted</span></h4>
+        </div>
+        <div class="fuse-wrap">
+          <div class="fuse-core">
+            <div class="fuse-l">α·v + β·s + γ·t<b>Fusion</b></div>
+          </div>
+          <div class="fuse-cap">
+            模态置信度作为注意力权重 α/β/γ ∈ [0,1]，∑=1。<br/>
+            缺失通路自动归零并重分配权重。
+          </div>
+          <div style="display:flex;gap:18px;font-family:var(--mono);font-size:10px;
+            color:var(--fg-3);letter-spacing:.06em">
+            <span>α 0.41</span><span>β 0.28</span><span>γ 0.31</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- output col -->
+      <div class="arch-col">
+        <h4>③ EMOTION DISTRIBUTION <span class="ix">softmax · 7</span></h4>
+        <div class="out-list">
+          <div class="out-row"><span class="swatch" style="background:var(--c-joy)"></span><span class="name">happy / 喜悦</span><span class="num">0.612</span></div>
+          <div class="out-row"><span class="swatch" style="background:var(--c-sur)"></span><span class="name">surprise / 惊讶</span><span class="num">0.183</span></div>
+          <div class="out-row"><span class="swatch" style="background:var(--c-neu)"></span><span class="name">neutral / 中性</span><span class="num">0.094</span></div>
+          <div class="out-row"><span class="swatch" style="background:var(--c-sad)"></span><span class="name">sad / 悲伤</span><span class="num">0.046</span></div>
+          <div class="out-row"><span class="swatch" style="background:var(--c-ang)"></span><span class="name">angry / 愤怒</span><span class="num">0.031</span></div>
+          <div class="out-row"><span class="swatch" style="background:var(--c-fea)"></span><span class="name">fear / 恐惧</span><span class="num">0.022</span></div>
+          <div class="out-row"><span class="swatch" style="background:var(--c-dis)"></span><span class="name">disgust / 厌恶</span><span class="num">0.012</span></div>
+        </div>
+        <div class="out-foot">
+          + Valence / Arousal 二维投影<br/>
+          + 文本理由生成 (rationale)<br/>
+          + JSON 报告导出
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────── DEMO ─────── -->
+<section class="sect" id="demo">
+  <div class="page">
+    <div class="sect-head">
+      <div class="sect-num">§ 02 / LIVE</div>
+      <div class="sect-h">
+        <h2><em>实时</em>诊断 · 切换案例查看融合过程。</h2>
+        <p>下方展示四组预设案例。点击左侧任意一条，即可看到三种模态各自的单模态置信度、
+          融合后的最终分布、以及由模型生成的诊断短句。</p>
+      </div>
+    </div>
+
+    <div id="demo-app"></div>
+  </div>
+</section>
+
+<!-- ─────── RESULTS ─────── -->
+<section class="sect" id="results">
+  <div class="page">
+    <div class="sect-head">
+      <div class="sect-num">§ 03 / METRICS</div>
+      <div class="sect-h">
+        <h2>消融实验 · 各通路<em>独立</em>与<em>融合</em>对比。</h2>
+        <p>所有数值均在测试集（n = 4,128）上报告。Fusion 模型相对最强单模态 (Speech) 提升约 5.3 个百分点的 Macro-F1，且在 Confusion Matrix 上消解了大部分跨类误判。</p>
+      </div>
+    </div>
+
+    <div class="res-grid">
+      <div class="tbl">
+        <div class="tbl-head">
+          <div>Model · 模型</div><div>Acc</div><div>F1 ma</div><div>Prec</div><div>Recall</div>
+        </div>
+        <div class="tbl-row">
+          <div class="nm">Vision only<small>VGG-Face · FER2013</small></div>
+          <div>0.741</div><div>0.706</div><div>0.715</div><div>0.703</div>
+        </div>
+        <div class="tbl-row">
+          <div class="nm">Speech only<small>MFCC + LSTM · RAVDESS</small></div>
+          <div>0.812</div><div>0.778</div><div>0.789</div><div>0.771</div>
+        </div>
+        <div class="tbl-row">
+          <div class="nm">Text only<small>BERT-base · GoEmotions</small></div>
+          <div>0.769</div><div>0.731</div><div>0.748</div><div>0.722</div>
+        </div>
+        <div class="tbl-row">
+          <div class="nm">V + S (late fusion)<small>concat → MLP</small></div>
+          <div>0.843</div><div>0.806</div><div>0.815</div><div>0.799</div>
+        </div>
+        <div class="tbl-row best">
+          <div class="nm">V + S + T (ours)<small>attention weighted</small></div>
+          <div>0.874</div><div>0.831</div><div>0.842</div><div>0.825</div>
+        </div>
+      </div>
+
+      <div class="cm">
+        <div class="cm-h">
+          <h4>Confusion · 融合模型</h4>
+          <span class="meta">N = 4,128 · row-norm</span>
+        </div>
+        <div class="cm-grid" id="cm-grid"></div>
+        <div class="cm-foot">
+          <span>0.0</span>
+          <div class="scale"></div>
+          <span>1.0</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────── VISUALIZATION ─────── -->
+<section class="sect" id="visual">
+  <div class="page">
+    <div class="sect-head">
+      <div class="sect-num">§ 04 / VISUAL</div>
+      <div class="sect-h">
+        <h2>从黑箱里<em>取出</em>四张图。</h2>
+        <p>模型不应只是给一个标签。下面四个面板分别展示了注意力热图、Valence-Arousal 二维投影、
+          频谱响应与时序情绪曲线 —— 让诊断结果可被检查、可被反驳。</p>
+      </div>
+    </div>
+
+    <div class="viz-grid">
+      <!-- attention heatmap -->
+      <div class="viz-card">
+        <div class="vh"><h4>面部注意力</h4><span class="tag">grad-cam</span></div>
+        <div class="vd">模型在做出 "happy" 判断时关注的面部区域。眼周与口角的激活峰值与心理学经验一致。</div>
+        <div class="viz-canvas" id="heatmap"></div>
+      </div>
+
+      <!-- spectrogram -->
+      <div class="viz-card">
+        <div class="vh"><h4>Mel 频谱响应</h4><span class="tag">audio</span></div>
+        <div class="vd">输入语音的对数 Mel 频谱（128 bins × 0.6 s）。高能区集中于第二共振峰区间。</div>
+        <div class="viz-canvas"><div class="spec" id="spec"></div></div>
+      </div>
+
+      <!-- V-A scatter -->
+      <div class="viz-card">
+        <div class="vh"><h4>Valence-Arousal 投影</h4><span class="tag">2-D</span></div>
+        <div class="vd">将 7 类离散情绪映射到 Russell 二维情绪空间。点的大小为预测置信度。</div>
+        <div class="viz-canvas">
+          <div class="va-bg"></div>
+          <div class="va-axis" style="left:50%;top:6px;transform:translateX(-50%)">+ AROUSAL</div>
+          <div class="va-axis" style="left:50%;bottom:6px;transform:translateX(-50%)">− AROUSAL</div>
+          <div class="va-axis" style="left:8px;top:50%;transform:translateY(-50%) rotate(-90deg);transform-origin:left center">− VALENCE</div>
+          <div class="va-axis" style="right:8px;top:50%;transform:translateY(-50%) rotate(-90deg);transform-origin:right center">+ VALENCE</div>
+          <div id="va-pts"></div>
+        </div>
+      </div>
+
+      <!-- time series -->
+      <div class="viz-card">
+        <div class="vh"><h4>时序情绪曲线</h4><span class="tag">temporal</span></div>
+        <div class="vd">对一段 20 秒对话样本进行滑窗推断。可见说话人情绪由 neutral 渐变为 happy 再回落。</div>
+        <div class="viz-canvas">
+          <svg viewBox="0 0 600 220" class="ts-svg" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="tsg" x1="0" x2="0" y1="0" y2="1">
+                <stop offset="0" stop-color="rgba(241,202,118,.35)"/>
+                <stop offset="1" stop-color="rgba(241,202,118,0)"/>
+              </linearGradient>
+            </defs>
+            <!-- grid -->
+            <g stroke="rgba(236,232,223,.08)" stroke-width="1">
+              <line x1="0" y1="55"  x2="600" y2="55"/>
+              <line x1="0" y1="110" x2="600" y2="110"/>
+              <line x1="0" y1="165" x2="600" y2="165"/>
+            </g>
+            <!-- happy curve -->
+            <path d="M0 170 C 80 168, 130 150, 180 120 S 280 30, 360 50 S 480 130, 600 150"
+                  fill="url(#tsg)" stroke="none"
+                  style="transform:translateY(50px) scaleY(0);transform-origin:bottom"
+                  id="ts-area"/>
+            <path d="M0 170 C 80 168, 130 150, 180 120 S 280 30, 360 50 S 480 130, 600 150"
+                  fill="none" stroke="rgb(241,202,118)" stroke-width="1.4"/>
+            <!-- neutral curve -->
+            <path d="M0 140 C 80 145, 160 150, 220 145 S 320 130, 360 135 S 480 145, 600 150"
+                  fill="none" stroke="rgba(236,232,223,.45)" stroke-width="1.2"
+                  stroke-dasharray="3 3"/>
+            <!-- labels -->
+            <g font-family="JetBrains Mono" font-size="9" fill="rgba(236,232,223,.5)">
+              <text x="6"   y="210">0s</text>
+              <text x="148" y="210">5s</text>
+              <text x="296" y="210">10s</text>
+              <text x="444" y="210">15s</text>
+              <text x="572" y="210">20s</text>
+            </g>
+            <g font-family="JetBrains Mono" font-size="9.5">
+              <circle cx="190" cy="118" r="3" fill="rgb(241,202,118)"/>
+              <text x="200" y="115" fill="rgb(241,202,118)">peak · happy 0.84</text>
+              <circle cx="50"  cy="170" r="3" fill="rgba(236,232,223,.6)"/>
+              <text x="60"  y="167" fill="rgba(236,232,223,.6)">neutral</text>
+            </g>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────── FOOTER ─────── -->
+<footer class="foot">
+  <div class="page">
+    <div class="foot-grid">
+      <div>
+        <h5>About</h5>
+        <p>本系统是「情感计算」课程的期末成果，开源仓库位于 GitHub。
+          所有数据集均使用开放学术资源；模型权重不含个人可识别信息。</p>
+      </div>
+      <div>
+        <h5>Datasets</h5>
+        <a>FER2013 · facial expression</a>
+        <a>RAVDESS · speech audio</a>
+        <a>GoEmotions · text labels</a>
+        <a>IEMOCAP · multimodal eval</a>
+      </div>
+      <div>
+        <h5>References</h5>
+        <a>Russell J.A. (1980) · Circumplex model</a>
+        <a>Devlin et al. (2019) · BERT</a>
+        <a>Tzirakis et al. (2017) · End-to-end multimodal</a>
+        <a>Ekman P. (1992) · Basic emotions</a>
+      </div>
+    </div>
+    <div class="foot-stamp">
+      <span>© 2025 · emotion.diag · multimodal affective computing</span>
+      <span>built with python · pytorch · streamlit · ❤︎ matplotlib</span>
+    </div>
+  </div>
+</footer>
+
+<!-- ─────── REACT DEMO ─────── -->
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel" src="demo.jsx"></script>
+
+<script>
+// ─── confusion matrix ───
+(function buildCM(){
+  const labels = ['hap','sur','neu','sad','ang','fea','dis'];
+  // diagonal-heavy synthetic matrix
+  const m = [
+    [0.91,0.03,0.03,0.01,0.00,0.01,0.01],
+    [0.04,0.84,0.05,0.02,0.02,0.02,0.01],
+    [0.05,0.04,0.79,0.06,0.02,0.02,0.02],
+    [0.02,0.02,0.05,0.85,0.02,0.03,0.01],
+    [0.01,0.03,0.04,0.04,0.81,0.02,0.05],
+    [0.02,0.04,0.05,0.06,0.03,0.78,0.02],
+    [0.02,0.02,0.04,0.03,0.06,0.03,0.80],
+  ];
+  const g = document.getElementById('cm-grid');
+  // corner cell
+  g.appendChild(document.createElement('div'));
+  // top header row
+  labels.forEach(l=>{
+    const d = document.createElement('div'); d.className='cm-th'; d.textContent=l;
+    g.appendChild(d);
+  });
+  // rows
+  m.forEach((row,i)=>{
+    const yh = document.createElement('div'); yh.className='cm-thy'; yh.textContent=labels[i];
+    g.appendChild(yh);
+    row.forEach((v,j)=>{
+      const c = document.createElement('div'); c.className='cm-cell'+(i===j?' diag':'');
+      const a = 0.05 + v*0.92;
+      c.style.background = `rgba(241,202,118,${a.toFixed(3)})`;
+      c.style.color = v>0.4?'#1a1a1a':'rgba(236,232,223,'+(0.3+v*0.7).toFixed(2)+')';
+      if(v>=0.05) c.textContent = v.toFixed(2).slice(1);
+      g.appendChild(c);
+    });
+  });
+})();
+
+// ─── attention heatmap face ───
+(function buildHeatmap(){
+  const g = document.getElementById('heatmap');
+  const heat = document.createElement('div'); heat.className='face-heat';
+  // synthesized face-like activation: focus on eyes + mouth corners
+  const focus = [
+    {cx:3.5,cy:4.5,r:1.5,w:1.0}, // left eye
+    {cx:8.5,cy:4.5,r:1.5,w:1.0}, // right eye
+    {cx:6,  cy:8.5,r:2.4,w:.95}, // mouth
+    {cx:6,  cy:6.5,r:1.0,w:.35}, // nose mild
+  ];
+  for(let y=0;y<12;y++){
+    for(let x=0;x<12;x++){
+      let act=0;
+      focus.forEach(f=>{
+        const d = Math.hypot(x-f.cx,y-f.cy);
+        act = Math.max(act, f.w * Math.exp(-(d*d)/(2*f.r*f.r)));
+      });
+      // edge falloff (face mask)
+      const edge = Math.max(0,1 - Math.hypot(x-5.5,y-6)/6.2);
+      act = Math.min(1, act * (.3+edge*.9));
+      const i = document.createElement('i');
+      const a = 0.04 + act*0.85;
+      i.style.background = `rgba(241,202,118,${a.toFixed(3)})`;
+      heat.appendChild(i);
+    }
+  }
+  g.appendChild(heat);
+
+  // overlay face contour
+  const svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
+  svg.setAttribute('viewBox','0 0 12 12');
+  svg.style.cssText='position:absolute;inset:24px;pointer-events:none';
+  svg.innerHTML = `
+    <ellipse cx="5.5" cy="6" rx="4.5" ry="5.4" fill="none" stroke="rgba(236,232,223,.35)" stroke-width=".1"/>
+    <circle cx="3.5" cy="4.5" r=".45" fill="none" stroke="rgba(236,232,223,.55)" stroke-width=".08"/>
+    <circle cx="8.5" cy="4.5" r=".45" fill="none" stroke="rgba(236,232,223,.55)" stroke-width=".08"/>
+    <path d="M3.5 8.6 Q6 9.6 8.5 8.6" fill="none" stroke="rgba(236,232,223,.55)" stroke-width=".1" stroke-linecap="round"/>
+  `;
+  g.appendChild(svg);
+
+  // caption
+  const cap = document.createElement('div');
+  cap.style.cssText='position:absolute;left:8px;bottom:8px;font-family:var(--mono);font-size:9.5px;color:var(--fg-3);letter-spacing:.06em';
+  cap.textContent='ACTIVATION · MAX 0.92 @ MOUTH';
+  g.appendChild(cap);
+})();
+
+// ─── spectrogram ───
+(function buildSpec(){
+  const s = document.getElementById('spec');
+  for(let y=0;y<20;y++){
+    for(let x=0;x<48;x++){
+      // envelope: speech energy peaks mid-frequency, time-varying
+      const time = x/48;
+      const freq = y/20;
+      const env = Math.exp(-Math.pow((freq-0.35),2)*6) *
+                  (0.4 + 0.6*Math.sin(time*7+freq*3));
+      const noise = 0.5 + 0.5*Math.sin(x*0.7 + y*1.3) * (0.5+Math.random()*0.5);
+      const a = Math.max(0, Math.min(1, env * noise));
+      const i = document.createElement('i');
+      i.style.background = `rgba(241,202,118,${(0.04 + a*0.85).toFixed(3)})`;
+      s.appendChild(i);
+    }
+  }
+})();
+
+// ─── V-A scatter ───
+(function buildVA(){
+  const c = document.getElementById('va-pts');
+  // valence(-1..1, x), arousal(-1..1, y, inverted)
+  const pts = [
+    {l:'hap', v: 0.65, a: 0.55, col:'var(--c-joy)', r:14},
+    {l:'sur', v: 0.30, a: 0.78, col:'var(--c-sur)', r:10},
+    {l:'neu', v: 0.02, a: 0.05, col:'var(--c-neu)', r:9},
+    {l:'sad', v:-0.60, a:-0.45, col:'var(--c-sad)', r:9},
+    {l:'ang', v:-0.55, a: 0.70, col:'var(--c-ang)', r:9},
+    {l:'fea', v:-0.45, a: 0.55, col:'var(--c-fea)', r:8},
+    {l:'dis', v:-0.70, a: 0.15, col:'var(--c-dis)', r:8},
+  ];
+  pts.forEach(p=>{
+    const left = 50 + p.v*38;      // %
+    const top  = 50 - p.a*38;      // %
+    const d = document.createElement('div');
+    d.className='va-pt';
+    d.style.cssText = `left:${left}%;top:${top}%;background:${p.col};width:${p.r}px;height:${p.r}px`;
+    c.appendChild(d);
+    const lbl = document.createElement('div');
+    lbl.style.cssText=`position:absolute;left:calc(${left}% + 10px);top:calc(${top}% - 6px);font-family:var(--mono);font-size:9.5px;color:var(--fg-2);letter-spacing:.04em`;
+    lbl.textContent=p.l;
+    c.appendChild(lbl);
+  });
+})();
+
+// ─── time-series animation on scroll ───
+(function tsAnim(){
+  const area = document.getElementById('ts-area');
+  const io = new IntersectionObserver((ents)=>{
+    ents.forEach(e=>{
+      if(e.isIntersecting){
+        area.style.transition='transform 1.4s cubic-bezier(.2,.7,.2,1)';
+        area.style.transform='translateY(0) scaleY(1)';
+        io.disconnect();
+      }
+    });
+  },{threshold:.3});
+  io.observe(area);
+})();
+</script>
+
+</body>
+</html>

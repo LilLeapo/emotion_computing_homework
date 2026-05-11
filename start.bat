@@ -57,6 +57,6 @@ echo    浏览器将自动打开 http://localhost:7860
 echo    按 Ctrl+C 停止服务
 echo ============================================
 echo.
-python app.py
+python frontend_app.py
 
 pause

@@ -29,6 +29,7 @@ class FaceEmotionRecognizer(BaseEmotionRecognizer):
             self._model = hf_pipeline(
                 "image-classification",
                 model="trpakov/vit-face-expression",
+                framework="pt",
                 device=0 if DEVICE == "cuda" else -1,
             )
             self._backend = "huggingface"
